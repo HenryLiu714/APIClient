@@ -1,0 +1,25 @@
+generator client {
+	provider = "prisma-client-js"
+}
+
+datasource db {
+	provider = "sqlite"
+}
+
+model Collection {
+    id String @id @default(uuid())
+    name String
+    requests HttpRequest[]
+    createdAt DateTime @default(now())
+}   
+
+model HttpRequest {
+    id String @id @default(uuid())
+    method String
+    url String
+    headers Json?
+    body String?
+    collectionId String
+    collection Collection @relation(fields: [collectionId], references: [id])
+    createdAt DateTime @default(now())
+}

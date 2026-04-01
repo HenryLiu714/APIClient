@@ -3,10 +3,14 @@ import { Err, Ok, type Result } from '../lib/result.js';
 import type { RecordError, RecordNotFoundError } from '../types/errors.js';
 import { RecordError as RecordErrorImpl, RecordNotFoundError as RecordNotFoundErrorImpl } from '../types/errors.js';
 
+export type RequestWithResponses = Prisma.HttpRequestGetPayload<{
+    include: { responses: true }
+}>;
+
 export interface IRequestRepository {
     create(data: Prisma.HttpRequestCreateInput): Promise<Result<HttpRequest, RecordNotFoundError>>;
-    findById(id: string): Promise<Result<HttpRequest, RecordError>>;
-    findByCollectionId(collectionId: string): Promise<Result<HttpRequest[], RecordError>>;
+    findById(id: string): Promise<Result<RequestWithResponses, RecordError>>;
+    findByCollectionId(collectionId: string): Promise<Result<RequestWithResponses[], RecordError>>;
     update(id: string, data: Prisma.HttpRequestUpdateInput): Promise<Result<HttpRequest, RecordError>>;
     delete(id: string): Promise<Result<HttpRequest, RecordError>>;
     duplicate(id: string): Promise<Result<HttpRequest, RecordError>>;
@@ -28,9 +32,12 @@ export class RequestRepository implements IRequestRepository {
         }
     }
 
-    async findById(id: string): Promise<Result<HttpRequest, RecordError>> {
+    async findById(id: string): Promise<Result<RequestWithResponses, RecordError>> {
         try {
-            const foundRequest = await this.prisma.httpRequest.findUnique({ where: { id } });
+            const foundRequest = await this.prisma.httpRequest.findUnique({
+                where: { id },
+                include: { responses: true }
+            });
 
             if (foundRequest === null) {
                 return Err(new RecordErrorImpl(`HTTPRequest with ID ${id} was not found.`));
@@ -42,10 +49,11 @@ export class RequestRepository implements IRequestRepository {
         }
     }
 
-    async findByCollectionId(collectionId: string): Promise<Result<HttpRequest[], RecordError>> {
+    async findByCollectionId(collectionId: string): Promise<Result<RequestWithResponses[], RecordError>> {
         try {
             const requests = await this.prisma.httpRequest.findMany({
                 where: { collectionId },
+                include: { responses: true },
                 orderBy: { createdAt: 'desc' }
             });
 

@@ -10,3 +10,7 @@ export const RequestSchema = z.object({
 })
 
 export type APIRequest = z.infer<typeof RequestSchema>
+
+export const ResponseSchema = z.object({
+
+})

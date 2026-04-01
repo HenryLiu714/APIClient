@@ -22,4 +22,17 @@ model HttpRequest {
     collectionId String
     collection Collection @relation(fields: [collectionId], references: [id])
     createdAt DateTime @default(now())
+
+    responses ApiResponse[]
+}
+
+model ApiResponse {
+    id String @id @default(uuid())
+    statusCode Int
+    statusText String
+    headers Json?
+    body String?
+    requestId String
+    request HttpRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+    createdAt DateTime @default(now())
 }
